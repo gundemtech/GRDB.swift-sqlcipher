@@ -38,11 +38,11 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
-// GRDB+SQLCipher: Uncomment those lines
-//dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0"))
-//cSettings.append(.define("SQLITE_HAS_CODEC"))
-//swiftSettings.append(.define("SQLITE_HAS_CODEC"))
-//swiftSettings.append(.define("SQLCipher"))
+// GRDB+SQLCipher: enabled (pin exact 4.14.0 for reproducible builds)
+dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", exact: "4.14.0"))
+cSettings.append(.define("SQLITE_HAS_CODEC"))
+swiftSettings.append(.define("SQLITE_HAS_CODEC"))
+swiftSettings.append(.define("SQLCipher"))
 
 let package = Package(
     name: "GRDB",
@@ -54,30 +54,23 @@ let package = Package(
         .watchOS(.v7),
     ],
     products: [
-        // GRDB+SQLCipher: Delete the GRDBSQLite library
-        .library(name: "GRDBSQLite", targets: ["GRDBSQLite"]),
+        // GRDB+SQLCipher: GRDBSQLite library removed
         .library(name: "GRDB", targets: ["GRDB"]),
         .library(name: "GRDB-dynamic", type: .dynamic, targets: ["GRDB"]),
     ],
     dependencies: dependencies,
     targets: [
-        // GRDB+SQLCipher: Delete the GRDBSQLite target
-        .systemLibrary(
-            name: "GRDBSQLite",
-            providers: [.apt(["libsqlite3-dev"])]),
-        // GRDB+SQLCipher: Uncomment the GRDBSQLCipher target
-        //.target(
-        //    name: "GRDBSQLCipher",
-        //    dependencies: [.product(name: "SQLCipher", package: "SQLCipher.swift")]
-        //),
+        // GRDB+SQLCipher: GRDBSQLite target removed
+        .target(
+            name: "GRDBSQLCipher",
+            dependencies: [.product(name: "SQLCipher", package: "SQLCipher.swift")]
+        ),
         .target(
             name: "GRDB",
             dependencies: [
-                // GRDB+SQLCipher: Delete the GRDBSQLite dependency
-                .target(name: "GRDBSQLite"),
-                // GRDB+SQLCipher: Uncomment the SQLCipher and GRDBSQLCipher dependencies
-                //.product(name: "SQLCipher", package: "SQLCipher.swift"),
-                //.target(name: "GRDBSQLCipher"),
+                // GRDB+SQLCipher: GRDBSQLite dependency removed, SQLCipher/GRDBSQLCipher enabled
+                .product(name: "SQLCipher", package: "SQLCipher.swift"),
+                .target(name: "GRDBSQLCipher"),
             ],
             path: "GRDB",
             resources: [.copy("PrivacyInfo.xcprivacy")],
